@@ -3,34 +3,39 @@
 #include <queue>
 #include <algorithm>
 
+#define INT_MIN 1e-9
+
 using namespace std;
 
 int largest_index, max_cookies;
 
+/* why no AC*/
+// shouldn't use name the same as global variable in local funcion
+// or it'll not update parameter in every run
 pair<int, int> find_most_cookie(vector<vector<int>> &AL, vector<bool> &visited, int startpoint, vector<int> &cookies)
 {
-    int this_run_largest_index = -1;
-    int this_run_max_cookies = 0;
-    queue<int> Q;
-    Q.push(startpoint);
+    // int largest_index = INT_MIN;
+    queue<pair<int, int>> Q;
+    // record the current location and distance 
+    Q.push({startpoint, startpoint});
     while (!Q.empty())
     {
-        // record the current vertex and cur_index is for later update(update max_index) 
-        int vertex = Q.front();
+        int vertex = Q.front().first;
+        int index = Q.front().second;
         Q.pop();
         if(visited[vertex])
             continue;
         visited[vertex] = true;
         // record largest index
-        this_run_largest_index = max(this_run_largest_index, vertex);
+        largest_index = max(largest_index, index);
         // Q.front().second = largest_index;
         if(find(cookies.begin(), cookies.end(), vertex) != cookies.end())
-            this_run_max_cookies++;
+            max_cookies++;
         for(auto i:AL[vertex])
             if(!visited[i])
-                Q.push(i);
+                Q.push({i, i});
     }
-    return {this_run_max_cookies, this_run_largest_index};
+    return {max_cookies, largest_index};
 }
 
 int main()
@@ -40,7 +45,7 @@ int main()
     int t;  cin >> t;
     while (t--)
     {
-        largest_index = -1;
+        largest_index = INT_MIN;
         max_cookies = 0;
         int n, m;   cin >> n >> m;
         vector<vector<int>> AL(n+1);
@@ -59,17 +64,13 @@ int main()
         for(int i=1; i<=n; i++)
             if(!visited[i])
             {
-                pair<int, int> result = find_most_cookie(AL, visited, i, cookies);
-                int cur_cookies = result.first;
-                int cur_largest_index = result.second;
-                // cout << "cur_cookies is " << cur_cookies << " cur_largest index is " << cur_largest_index << "\n";
-                
-                // if this run find more cookies then update largest index
-                if (max_cookies <= cur_cookies)
-                    largest_index = cur_largest_index;
+                // if find more cookies, update largest index
+                if (max_cookies <= find_most_cookie(AL, visited, i, cookies).first)
+                    largest_index = find_most_cookie(AL, visited, i, cookies).second;
+                cout << "largest_index is " << largest_index << "\n";
                 // update max cookies
-                max_cookies = max(max_cookies, cur_cookies);
-                // cout << "max_cookies is " << max_cookies << "\n";
+                max_cookies = max(max_cookies, find_most_cookie(AL, visited, i, cookies).first);
+                cout << "max_cookies is " << max_cookies << "\n";
             }
         cout << largest_index << " " << max_cookies << "\n";
     }
